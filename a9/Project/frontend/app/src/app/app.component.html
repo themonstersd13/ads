@@ -1,0 +1,60 @@
+﻿<div class="page">
+  <div class="card">
+    <h1 class="title">Assignment 9: MongoDB CRUD</h1>
+    <p class="muted">PRN database namespace: prn_23510009</p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="field">
+        <label>Name</label>
+        <input [(ngModel)]="form.name" placeholder="Student Name" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input [(ngModel)]="form.email" placeholder="student@example.com" />
+      </div>
+      <div class="field">
+        <label>Course</label>
+        <input [(ngModel)]="form.course" placeholder="B.Tech" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" (click)="saveStudent()">{{ editingId ? 'Update' : 'Create' }} Student</button>
+      <button class="secondary" (click)="cancelEdit()" *ngIf="editingId">Cancel Edit</button>
+      <button class="secondary" (click)="fetchStudents()">Refresh</button>
+    </div>
+
+    <p class="note" *ngIf="message">{{ message }}</p>
+  </div>
+
+  <div class="card">
+    <h3>Student Records (MongoDB)</h3>
+    <p *ngIf="loading">Loading...</p>
+
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Course</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of students">
+          <td>{{ s.id }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.course }}</td>
+          <td>
+            <button class="secondary" (click)="startEdit(s)">Edit</button>
+            <button class="danger" (click)="deleteStudent(s)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

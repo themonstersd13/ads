@@ -1,0 +1,122 @@
+<div class="page-shell">
+  <div class="background-orb background-orb-one"></div>
+  <div class="background-orb background-orb-two"></div>
+
+  <main class="dashboard">
+    <section class="hero-card">
+      <div class="eyebrow">Cora Graph Database</div>
+      <h1>Search connected papers with a cleaner, faster interface.</h1>
+      <p>
+        Check citation paths, inspect classifications, and explore papers written by an author from one polished workspace.
+      </p>
+      <div class="hero-metrics">
+        <div>
+          <span>3</span>
+          <label>Live queries</label>
+        </div>
+        <div>
+          <span>Neo4j</span>
+          <label>Connected backend</label>
+        </div>
+        <div>
+          <span>Angular</span>
+          <label>Interactive UI</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards-grid">
+      <article class="query-card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">A</span>
+            <h2>Citation Path Checker</h2>
+          </div>
+          <p>Find the shortest citation path between two papers.</p>
+        </div>
+
+        <div class="input-row">
+          <label class="field">
+            <span>Paper A (ID)</span>
+            <input #paperA type="text" placeholder="e.g., 1123188" />
+          </label>
+
+          <label class="field">
+            <span>Paper B (ID)</span>
+            <input #paperB type="text" placeholder="e.g., 1123189" />
+          </label>
+        </div>
+
+        <button class="action-button" (click)="checkCitation(paperA.value, paperB.value)">Check citation path</button>
+
+        <div class="result-panel" [class.empty]="!queryA_Result && !loadingA">
+          @if (loadingA) {
+            <div class="loader"><span class="spinner"></span> Loading...</div>
+          } @else {
+            {{ queryA_Result || 'Enter two paper IDs to find the citation path.' }}
+          }
+        </div>
+      </article>
+
+      <article class="query-card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">B</span>
+            <h2>Paper Classification</h2>
+          </div>
+          <p>Find the research category assigned to a paper.</p>
+        </div>
+
+        <div class="input-row single">
+          <label class="field">
+            <span>Paper ID</span>
+            <input #classTitle type="text" placeholder="e.g., 1123188" />
+          </label>
+        </div>
+
+        <button class="action-button secondary" (click)="getClassification(classTitle.value)">Search classification</button>
+
+        <div class="result-panel" [class.empty]="!queryB_Result && !loadingB">
+          @if (loadingB) {
+            <div class="loader"><span class="spinner"></span> Loading...</div>
+          } @else {
+            {{ queryB_Result || 'Enter a paper ID to find its classification.' }}
+          }
+        </div>
+      </article>
+
+      <article class="query-card query-card-wide">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">C</span>
+            <h2>Papers by Author</h2>
+          </div>
+          <p>List all papers written by a specific author.</p>
+        </div>
+
+        <div class="input-row single">
+          <label class="field">
+            <span>Author ID</span>
+            <input #authorName type="text" placeholder="e.g., A15" />
+          </label>
+        </div>
+
+        <button class="action-button tertiary" (click)="getAuthorPapers(authorName.value)">Find papers</button>
+
+        <div class="result-panel list-panel" [class.empty]="queryC_Result.length === 0 && !loadingC">
+          @if (loadingC) {
+            <div class="loader"><span class="spinner"></span> Loading...</div>
+          } @else if (queryC_Result.length === 0) {
+            <span>Enter an author ID to see their papers.</span>
+          } @else {
+            <ul class="result-list">
+              @for (paper of queryC_Result; track paper) {
+                <li>{{ paper }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </article>
+    </section>
+  </main>
+</div>

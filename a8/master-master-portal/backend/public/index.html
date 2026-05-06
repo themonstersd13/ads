@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Distributed Master-Master Portal</title>
+  <style>
+    :root {
+      --bg-deep: #10212b;
+      --bg-mid: #173546;
+      --bg-soft: #22526b;
+      --panel: rgba(255, 255, 255, 0.12);
+      --panel-strong: rgba(255, 255, 255, 0.16);
+      --line: rgba(255, 255, 255, 0.22);
+      --ink: #f4fbff;
+      --muted: #bed5e5;
+      --ok: #5eead4;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+      --shadow: 0 18px 40px rgba(8, 18, 24, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(94, 234, 212, 0.18), transparent 32%),
+        radial-gradient(circle at 86% 12%, rgba(251, 191, 36, 0.16), transparent 30%),
+        linear-gradient(155deg, var(--bg-deep), var(--bg-mid) 52%, var(--bg-soft));
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 4px 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .hero {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-top {
+      display: flex;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.84rem;
+      color: var(--ink);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    input, select {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--ink);
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: rgba(244, 251, 255, 0.62);
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-ok {
+      background: var(--ok);
+      color: #07211d;
+    }
+
+    .btn-soft {
+      background: rgba(255, 255, 255, 0.18);
+      color: var(--ink);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #300910;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .node-card {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .node-status {
+      font-weight: 700;
+    }
+
+    .ok {
+      color: var(--ok);
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .assignment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .assignment-card {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      padding: 14px;
+    }
+
+    .assignment-card ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 11px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 0.92rem;
+      vertical-align: top;
+    }
+
+    td input {
+      min-width: 150px;
+    }
+
+    .message {
+      margin-top: 10px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 700px) {
+      main {
+        padding: 12px;
+      }
+
+      .card {
+        padding: 14px;
+      }
+
+      table {
+        min-width: 760px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card hero">
+      <div class="hero-top">
+        <div>
+          <h1>3-Node Master-Master DB Portal</h1>
+          <p>Distributed PostgreSQL demo with multi-write replication, simple data access GUI, and role-based assignment to different nodes.</p>
+          <p>Write on one node, switch the read node, and show the same record on another machine after replication.</p>
+        </div>
+        <div class="pill-row">
+          <span class="pill" id="writeInfo">Write node: -</span>
+          <span class="pill" id="readInfo">Read node: -</span>
+          <span class="pill" id="routeInfo">Rule: -</span>
+          <span class="pill" id="healthInfo">Cluster health: unknown</span>
+          <span class="pill" id="autoInfo">Auto refresh: every 5s</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Request Control</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="userId">User ID</label>
+          <input id="userId" placeholder="alice / bob / charlie">
+        </div>
+        <div class="field">
+          <label for="role">Role</label>
+          <select id="role">
+            <option value="student">student</option>
+            <option value="teacher">teacher</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="readNode">Read From Node</label>
+          <select id="readNode">
+            <option value="auto">auto (same as routed write node)</option>
+            <option value="node1">node1</option>
+            <option value="node2">node2</option>
+            <option value="node3">node3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="name">Student Name</label>
+          <input id="name" placeholder="Student name">
+        </div>
+        <div class="field">
+          <label for="email">Student Email</label>
+          <input id="email" placeholder="student@example.com">
+        </div>
+        <div class="actions">
+          <button class="btn-ok" id="createBtn">Create</button>
+          <button class="btn-soft" id="refreshBtn">Refresh</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Cluster Nodes</h2>
+      <div class="node-grid" id="nodeGrid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Assignment Rules</h2>
+      <div class="assignment-grid" id="assignmentGrid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Replicated Records</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Owner User</th>
+              <th>Owner Role</th>
+              <th>Last Write Node</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="message" id="message"></p>
+    </section>
+  </main>
+
+  <script>
+    const userIdEl = document.getElementById('userId');
+    const roleEl = document.getElementById('role');
+    const readNodeEl = document.getElementById('readNode');
+    const nameEl = document.getElementById('name');
+    const emailEl = document.getElementById('email');
+    const rowsEl = document.getElementById('rows');
+    const nodeGridEl = document.getElementById('nodeGrid');
+    const assignmentGridEl = document.getElementById('assignmentGrid');
+    const messageEl = document.getElementById('message');
+    const writeInfoEl = document.getElementById('writeInfo');
+    const readInfoEl = document.getElementById('readInfo');
+    const routeInfoEl = document.getElementById('routeInfo');
+    const healthInfoEl = document.getElementById('healthInfo');
+    const autoInfoEl = document.getElementById('autoInfo');
+    const AUTO_REFRESH_MS = 5000;
+
+    function getHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'x-user-id': userIdEl.value.trim(),
+        'x-user-role': roleEl.value.trim(),
+        'x-read-node': readNodeEl.value.trim()
+      };
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          ...getHeaders(),
+          ...(options.headers || {})
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+      return data;
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function setMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.style.color = isError ? '#ffd1db' : '#bed5e5';
+    }
+
+    function routeLabel(reason, matchedValue) {
+      if (reason === 'user') {
+        return `user rule (${matchedValue})`;
+      }
+      if (reason === 'role') {
+        return `role rule (${matchedValue})`;
+      }
+      return `fallback (${matchedValue})`;
+    }
+
+    function updateRoutePills(payload) {
+      writeInfoEl.textContent = `Write node: ${payload.writeNode || payload.routedNode || '-'}`;
+      readInfoEl.textContent = `Read node: ${payload.readNode || payload.writeNode || '-'}`;
+      routeInfoEl.textContent = `Rule: ${routeLabel(payload.routeReason, payload.matchedValue || payload.writeNode || '-')}`;
+    }
+
+    function renderRows(rows) {
+      rowsEl.innerHTML = '';
+      if (!rows.length) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="8" class="muted">No records found</td>';
+        rowsEl.appendChild(tr);
+        return;
+      }
+
+      for (const row of rows) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(row.id)}</td>
+          <td>${escapeHtml(row.owner_user)}</td>
+          <td>${escapeHtml(row.owner_role)}</td>
+          <td>${escapeHtml(row.last_write_node)}</td>
+          <td><input data-type="name" data-id="${escapeHtml(row.id)}" value="${escapeHtml(row.name)}"></td>
+          <td><input data-type="email" data-id="${escapeHtml(row.id)}" value="${escapeHtml(row.email)}"></td>
+          <td>${new Date(row.updated_at).toLocaleString()}</td>
+          <td>
+            <button class="btn-soft" data-action="save" data-id="${escapeHtml(row.id)}">Save</button>
+            <button class="btn-danger" data-action="delete" data-id="${escapeHtml(row.id)}">Delete</button>
+          </td>
+        `;
+        rowsEl.appendChild(tr);
+      }
+    }
+
+    function renderAssignments(assignments, fallbackNode) {
+      assignmentGridEl.innerHTML = '';
+      const cards = [
+        {
+          title: 'Role to Node',
+          body: Object.entries(assignments.roles || {}).map(([role, node]) => `${role} -> ${node}`)
+        },
+        {
+          title: 'User to Node',
+          body: Object.entries(assignments.users || {}).map(([user, node]) => `${user} -> ${node}`)
+        },
+        {
+          title: 'Fallback',
+          body: [`unknown users or roles -> ${fallbackNode}`]
+        }
+      ];
+
+      for (const card of cards) {
+        const div = document.createElement('div');
+        div.className = 'assignment-card';
+        const items = card.body.length
+          ? `<ul>${card.body.map((text) => `<li>${escapeHtml(text)}</li>`).join('')}</ul>`
+          : '<p class="muted">No assignments defined.</p>';
+        div.innerHTML = `<h3>${escapeHtml(card.title)}</h3>${items}`;
+        assignmentGridEl.appendChild(div);
+      }
+    }
+
+    function renderCluster(nodes, assignments) {
+      nodeGridEl.innerHTML = '';
+
+      for (const node of nodes) {
+        const roles = (assignments.rolesByNode && assignments.rolesByNode[node.nodeName]) || [];
+        const users = (assignments.usersByNode && assignments.usersByNode[node.nodeName]) || [];
+        const div = document.createElement('div');
+        div.className = 'node-card';
+        div.innerHTML = `
+          <div class="row">
+            <strong>${escapeHtml(node.nodeName)}</strong>
+          </div>
+          <div class="node-status ${node.ok ? 'ok' : 'warn'}">${node.ok ? 'Reachable' : 'Unavailable'}</div>
+          <div class="muted">DB: ${escapeHtml(node.database || 'lab_sync')}</div>
+          <div class="muted">Host: ${escapeHtml(node.host || '-')} : ${escapeHtml(node.port || '-')}</div>
+          <div class="muted">Records visible: ${escapeHtml(node.recordCount || 0)}</div>
+          <div class="muted">Roles: ${escapeHtml(roles.join(', ') || 'none')}</div>
+          <div class="muted">Users: ${escapeHtml(users.join(', ') || 'none')}</div>
+          ${node.ok ? '' : `<div class="muted">Error: ${escapeHtml(node.error || 'unknown')}</div>`}
+        `;
+        nodeGridEl.appendChild(div);
+      }
+
+      const okCount = nodes.filter((node) => node.ok).length;
+      healthInfoEl.textContent = `Cluster health: ${okCount}/${nodes.length} nodes reachable`;
+    }
+
+    async function refreshCluster() {
+      const cluster = await api('/api/cluster');
+      renderCluster(cluster.nodes || [], cluster.assignments || {});
+      renderAssignments(cluster.assignments || {}, cluster.fallbackNode);
+    }
+
+    async function refreshRoutingOnly() {
+      const routing = await api('/api/routing');
+      updateRoutePills(routing);
+    }
+
+    async function refreshRows() {
+      const data = await api('/api/students');
+      updateRoutePills(data);
+      renderRows(data.rows || []);
+      setMessage(`Loaded ${data.rows.length} rows. Write node ${data.writeNode}, reading from ${data.readNode}.`);
+    }
+
+    async function refreshAll() {
+      try {
+        await refreshRoutingOnly();
+        await refreshCluster();
+        await refreshRows();
+      } catch (error) {
+        setMessage(error.message, true);
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', refreshAll);
+
+    document.getElementById('createBtn').addEventListener('click', async () => {
+      const name = nameEl.value.trim();
+      const email = emailEl.value.trim();
+      if (!name || !email) {
+        setMessage('Name and email are required.', true);
+        return;
+      }
+
+      try {
+        const data = await api('/api/students', {
+          method: 'POST',
+          body: JSON.stringify({
+            userId: userIdEl.value.trim(),
+            role: roleEl.value.trim(),
+            name,
+            email
+          })
+        });
+
+        nameEl.value = '';
+        emailEl.value = '';
+        updateRoutePills(data);
+        setMessage(`Created record on ${data.writeNode}.`);
+        await refreshAll();
+      } catch (error) {
+        setMessage(error.message, true);
+      }
+    });
+
+    rowsEl.addEventListener('click', async (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const action = target.getAttribute('data-action');
+      const id = target.getAttribute('data-id');
+      if (!action || !id) {
+        return;
+      }
+
+      if (action === 'delete') {
+        try {
+          const data = await api(`/api/students/${id}`, { method: 'DELETE' });
+          updateRoutePills(data);
+          setMessage(`Deleted on ${data.writeNode}.`);
+          await refreshAll();
+        } catch (error) {
+          setMessage(error.message, true);
+        }
+        return;
+      }
+
+      if (action === 'save') {
+        const nameInput = rowsEl.querySelector(`input[data-type="name"][data-id="${CSS.escape(id)}"]`);
+        const emailInput = rowsEl.querySelector(`input[data-type="email"][data-id="${CSS.escape(id)}"]`);
+
+        if (!(nameInput instanceof HTMLInputElement) || !(emailInput instanceof HTMLInputElement)) {
+          setMessage('Unable to find editable row fields.', true);
+          return;
+        }
+
+        try {
+          const data = await api(`/api/students/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              userId: userIdEl.value.trim(),
+              role: roleEl.value.trim(),
+              name: nameInput.value.trim(),
+              email: emailInput.value.trim()
+            })
+          });
+          updateRoutePills(data);
+          setMessage(`Updated on ${data.writeNode}.`);
+          await refreshAll();
+        } catch (error) {
+          setMessage(error.message, true);
+        }
+      }
+    });
+
+    userIdEl.addEventListener('change', refreshRoutingOnly);
+    roleEl.addEventListener('change', refreshAll);
+    readNodeEl.addEventListener('change', refreshAll);
+
+    autoInfoEl.textContent = `Auto refresh: every ${AUTO_REFRESH_MS / 1000}s`;
+    refreshAll();
+    setInterval(refreshAll, AUTO_REFRESH_MS);
+  </script>
+</body>
+</html>

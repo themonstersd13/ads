@@ -1,0 +1,112 @@
+<div class="page-shell">
+  <div class="background-orb background-orb-one"></div>
+  <div class="background-orb background-orb-two"></div>
+
+  <main class="dashboard">
+    <section class="hero-card">
+      <div class="eyebrow">Cora Graph Database</div>
+      <h1>Search connected papers with a cleaner, faster interface.</h1>
+      <p>
+        Check citation paths, inspect classifications, and explore papers written by an author from one polished workspace.
+      </p>
+      <div class="hero-metrics">
+        <div>
+          <span>3</span>
+          <label>Live queries</label>
+        </div>
+        <div>
+          <span>Neo4j</span>
+          <label>Connected backend</label>
+        </div>
+        <div>
+          <span>Angular</span>
+          <label>Interactive UI</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards-grid">
+      <article class="query-card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">A</span>
+            <h2>Citation Path Checker</h2>
+          </div>
+          <p>See whether one paper reaches another through citations.</p>
+        </div>
+
+        <div class="input-row">
+          <label class="field">
+            <span>Paper A</span>
+            <input #paperA type="text" placeholder="e.g., Research Paper 31336" />
+          </label>
+
+          <label class="field">
+            <span>Paper B</span>
+            <input #paperB type="text" placeholder="e.g., Research Paper 35" />
+          </label>
+        </div>
+
+        <button class="action-button" (click)="checkCitation(paperA.value, paperB.value)">Check citation path</button>
+
+        <div class="result-panel" [class.empty]="!queryA_Result">
+          {{ queryA_Result || 'Run a search to see whether these papers are connected.' }}
+        </div>
+      </article>
+
+      <article class="query-card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">B</span>
+            <h2>Paper Classification</h2>
+          </div>
+          <p>Find the category linked to a paper title.</p>
+        </div>
+
+        <div class="input-row single">
+          <label class="field">
+            <span>Paper title</span>
+            <input #classTitle type="text" placeholder="e.g., Research Paper 31336" />
+          </label>
+        </div>
+
+        <button class="action-button secondary" (click)="getClassification(classTitle.value)">Search classification</button>
+
+        <div class="result-panel" [class.empty]="!queryB_Result">
+          {{ queryB_Result || 'The classification will appear here after you search.' }}
+        </div>
+      </article>
+
+      <article class="query-card query-card-wide">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">C</span>
+            <h2>Papers by Author</h2>
+          </div>
+          <p>List every paper connected to a given author.</p>
+        </div>
+
+        <div class="input-row single">
+          <label class="field">
+            <span>Author name</span>
+            <input #authorName type="text" placeholder="e.g., Author 1" />
+          </label>
+        </div>
+
+        <button class="action-button tertiary" (click)="getAuthorPapers(authorName.value)">Find papers</button>
+
+        <div class="result-panel list-panel" [class.empty]="queryC_Result.length === 0">
+          @if (queryC_Result.length === 0) {
+            <span>Results will appear here after you search.</span>
+          } @else {
+            <ul class="result-list">
+              @for (paper of queryC_Result; track paper) {
+                <li>{{ paper }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </article>
+    </section>
+  </main>
+</div>

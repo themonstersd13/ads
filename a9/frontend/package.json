@@ -1,0 +1,10 @@
+{
+  "name": "assignment9-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "cd app && npm start",
+    "start": "cd app && npm start",
+    "build": "cd app && npm run build",
+    "install": "cd app && npm install"
+  }
+}

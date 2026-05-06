@@ -1,0 +1,112 @@
+<div class="min-h-screen bg-gray-100 p-6 md:p-10">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-blue-700">PostgreSQL CRUD - Assignment 1</h1>
+    <p class="text-gray-500 mt-1">PRN: 23510009 &middot; Database: DB23510009</p>
+  </div>
+
+  <!-- Toast Message -->
+  <div *ngIf="message"
+    [ngClass]="messageType === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
+    class="border-l-4 p-4 mb-6 rounded shadow-sm transition-all">
+    {{ message }}
+  </div>
+
+  <!-- Table Selector -->
+  <div class="bg-white rounded-lg shadow p-5 mb-6">
+    <label class="block font-semibold text-gray-700 mb-2">Select Database Table:</label>
+    <select (change)="onTableSelect($event)" class="p-2 border border-gray-300 rounded w-72 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+      <option value="">-- Choose a Table --</option>
+      <option *ngFor="let t of tables" [value]="t.table_name">{{ t.table_name }}</option>
+    </select>
+  </div>
+
+  <!-- CRUD Section (only when a table is selected) -->
+  <div *ngIf="selectedTable">
+
+    <!-- Toolbar -->
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-gray-800">
+        Table: <span class="text-blue-600">{{ selectedTable }}</span>
+        <span class="text-sm font-normal text-gray-400 ml-2">({{ tableData.length }} rows)</span>
+      </h2>
+      <button (click)="openCreateForm()"
+        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-semibold shadow transition flex items-center gap-2">
+        + Add Row
+      </button>
+    </div>
+
+    <!-- Create / Edit Form -->
+    <div *ngIf="showForm" class="bg-white rounded-lg shadow p-6 mb-6 border-l-4"
+      [ngClass]="editingRow ? 'border-yellow-500' : 'border-green-500'">
+      <h3 class="text-lg font-bold mb-4">
+        {{ editingRow ? 'Edit Row' : 'Insert New Row' }}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let col of getFormColumns()">
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            {{ col.column_name }}
+            <span class="text-gray-400 text-xs">({{ col.data_type }})</span>
+          </label>
+          <input [(ngModel)]="formData[col.column_name]"
+            [placeholder]="col.column_name"
+            [disabled]="editingRow && col.is_primary_key"
+            class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500">
+        </div>
+      </div>
+      <div class="mt-5 flex gap-3">
+        <button *ngIf="!editingRow" (click)="createRow()"
+          class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold shadow transition">
+          Insert
+        </button>
+        <button *ngIf="editingRow" (click)="updateRow()"
+          class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded font-semibold shadow transition">
+          Update
+        </button>
+        <button (click)="cancelForm()"
+          class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded font-semibold transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-lg shadow overflow-x-auto">
+      <table *ngIf="tableData.length > 0; else noData" class="min-w-full">
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th *ngFor="let col of columns" class="px-4 py-3 text-left text-sm font-semibold">
+              {{ col.column_name }}
+              <span *ngIf="col.is_primary_key" class="text-yellow-300 ml-1" title="Primary Key">&#128273;</span>
+            </th>
+            <th class="px-4 py-3 text-center text-sm font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tableData; let i = index"
+            class="border-b hover:bg-blue-50 transition"
+            [ngClass]="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+            <td *ngFor="let col of columns" class="px-4 py-3 text-sm text-gray-700">
+              {{ row[col.column_name] }}
+            </td>
+            <td class="px-4 py-3 text-center">
+              <button (click)="openEditForm(row)"
+                class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm font-semibold mr-2 transition">
+                Edit
+              </button>
+              <button (click)="deleteRow(row)"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold transition">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noData>
+        <div class="p-6 text-gray-500 italic text-center">No rows found in this table.</div>
+      </ng-template>
+    </div>
+  </div>
+
+</div>

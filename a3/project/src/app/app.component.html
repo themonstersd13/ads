@@ -1,0 +1,108 @@
+<div class="container">
+  <h1>Student MIS</h1>
+
+  <div class="card">
+    <h3>Login</h3>
+    <div class="row">
+      <div>
+        <label>Username</label>
+        <input [(ngModel)]="loginForm.username" placeholder="admin" />
+      </div>
+      <div>
+        <label>Password</label>
+        <input [(ngModel)]="loginForm.password" type="password" placeholder="admin" />
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button type="button" (click)="login()">Login</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button type="button" class="secondary" (click)="logout()">Logout</button>
+      </div>
+    </div>
+    <div class="small">{{ message }}</div>
+    <div class="small">Role: {{ role || "none" }}</div>
+  </div>
+
+  <div class="card">
+    <h3>Entities</h3>
+    <div class="row">
+      <div>
+        <label>Entity</label>
+        <select [(ngModel)]="selectedEntityKey" (ngModelChange)="selectEntity($event)">
+          <option *ngFor="let e of entities" [value]="e.key">{{ e.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button type="button" class="secondary" (click)="loadRows()">Refresh</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button type="button" class="secondary" (click)="runReport()">Run Report</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Data Entry: {{ selectedEntity.label }}</h3>
+    <div class="row">
+      <div *ngFor="let field of selectedEntity.fields">
+        <label>{{ field.label }}</label>
+        <select *ngIf="selectedEntity.key === 'users' && field.name === 'role_id'" [(ngModel)]="form[field.name]">
+          <option [ngValue]="null">Select role</option>
+          <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
+        </select>
+        <select *ngIf="(selectedEntity.key === 'students' || selectedEntity.key === 'instructors' || selectedEntity.key === 'courses') && field.name === 'dept_id'" [(ngModel)]="form[field.name]">
+          <option [ngValue]="null">Select department</option>
+          <option *ngFor="let dept of departments" [ngValue]="dept.id">{{ dept.name }}</option>
+        </select>
+        <select *ngIf="selectedEntity.key === 'enrollments' && field.name === 'student_id'" [(ngModel)]="form[field.name]">
+          <option [ngValue]="null">Select student</option>
+          <option *ngFor="let student of students" [ngValue]="student.id">{{ student.roll_no }} - {{ student.name }}</option>
+        </select>
+        <select *ngIf="selectedEntity.key === 'enrollments' && field.name === 'course_id'" [(ngModel)]="form[field.name]">
+          <option [ngValue]="null">Select course</option>
+          <option *ngFor="let course of courses" [ngValue]="course.id">{{ course.code }} - {{ course.title }}</option>
+        </select>
+        <input
+          *ngIf="!(selectedEntity.key === 'users' && field.name === 'role_id')
+            && !((selectedEntity.key === 'students' || selectedEntity.key === 'instructors' || selectedEntity.key === 'courses') && field.name === 'dept_id')
+            && !(selectedEntity.key === 'enrollments' && field.name === 'student_id')
+            && !(selectedEntity.key === 'enrollments' && field.name === 'course_id')"
+          [(ngModel)]="form[field.name]"
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <button type="button" (click)="save()">{{ editingId ? "Update" : "Save" }}</button>
+      </div>
+      <div>
+        <button type="button" class="secondary" (click)="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>List</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Actions</th>
+          <th *ngFor="let field of selectedEntity.fields">{{ field.label }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; trackBy: trackById">
+          <td>
+            <button type="button" class="secondary" (click)="editRow(row)">Edit</button>
+            <button type="button" class="danger" (click)="remove(row.id)">Delete</button>
+          </td>
+          <td *ngFor="let field of selectedEntity.fields">{{ row[field.name] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
