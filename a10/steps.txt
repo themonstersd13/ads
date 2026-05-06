@@ -1,0 +1,88 @@
+⚙️ 🔁 COMMON STEP (DO ON ALL 4 NODES FIRST)
+Edit postgresql.conf
+listen_addresses = '*'
+wal_level = logical
+max_wal_senders = 10
+max_replication_slots = 10
+Edit pg_hba.conf
+host all all 0.0.0.0/0 md5
+host replication all 0.0.0.0/0 md5
+Restart PostgreSQL service
+Create replication user (ALL nodes)
+CREATE ROLE repl WITH LOGIN REPLICATION SUPERUSER PASSWORD 'replpass';
+
+Create database + table (ALL nodes)
+CREATE DATABASE labdb;
+\c labdb
+
+CREATE TABLE users (
+  id BIGINT PRIMARY KEY,
+  name TEXT
+);
+Create publication (ALL nodes)
+CREATE PUBLICATION pub_all FOR ALL TABLES;
+
+NODE 1 SETUP (10.40.7.45)
+Unique sequence (avoid conflicts)
+CREATE SEQUENCE user_seq START 1 INCREMENT 4;
+Subscriptions
+CREATE SUBSCRIPTION sub_node2
+CONNECTION 'host=10.40.19.154 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node3
+CONNECTION 'host=10.40.7.46 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node4
+CONNECTION 'host=10.7.3.56 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+NODE 2 SETUP (10.40.19.154)
+Unique sequence
+CREATE SEQUENCE user_seq START 2 INCREMENT 4;
+Subscriptions
+CREATE SUBSCRIPTION sub_node1
+CONNECTION 'host=10.40.7.45 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node3
+CONNECTION 'host=10.40.7.46 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node4
+CONNECTION 'host=10.7.3.56 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+NODE 3 SETUP (10.40.7.46)
+CREATE SEQUENCE user_seq START 3 INCREMENT 4;
+Subscriptions
+CREATE SUBSCRIPTION sub_node1
+CONNECTION 'host=10.40.7.45 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node2
+CONNECTION 'host=10.40.19.154 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node4
+CONNECTION 'host=10.7.3.56 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+NODE 4 SETUP (10.7.3.56)
+Unique sequence
+CREATE SEQUENCE user_seq START 4 INCREMENT 4;
+Subscriptions
+CREATE SUBSCRIPTION sub_node1
+CONNECTION 'host=10.40.7.45 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node2
+CONNECTION 'host=10.40.19.154 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+CREATE SUBSCRIPTION sub_node3
+CONNECTION 'host=10.40.7.46 dbname=labdb user=repl password=replpass'
+PUBLICATION pub_all;
+
+netsh advfirewall firewall add rule name="Postgres" dir=in action=allow protocol=TCP localport=5432
